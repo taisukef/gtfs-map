@@ -20,7 +20,8 @@ import { maplibregl } from "https://taisukef.github.io/maplibre-gl-js/maplibre-g
 import { sleep } from "https://js.sabae.cc/sleep.js";
 
 const getGTFS = async () => {
-    const url = "http://www3.unobus.co.jp/GTFS/GTFS_RT-VP.bin"; // CORS
+    //const url = "http://www3.unobus.co.jp/GTFS/GTFS_RT-VP.bin"; // CORS
+    const url = "https://unobus.bustei.net/GTFS_RT-VP.bin";
     const data = new Uint8Array(await (await fetch(url)).arrayBuffer());
     const feed = GtfsRealtimeApi.transit_realtime.FeedMessage.decode(data);
     return feed;
