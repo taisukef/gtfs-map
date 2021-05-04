@@ -1,0 +1,83 @@
+<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width">
+<link href='https://taisukef.github.io/gsivectortile-3d-like-building/maplibre-gl.css' rel='stylesheet'>
+<style>
+body {
+    margin: 0;
+    padding: 0;
+}
+#map {
+    position: absolute;
+    height: 100%;
+    width: 100%;
+}
+.popup {
+    word-break: break-all;
+}
+</style>
+<script type="module">
+import { GtfsRealtimeApi } from "https://taisukef.github.io/gtfs-realtime-bindings/deno/gtfs-realtime.js";
+import { maplibregl } from "https://taisukef.github.io/maplibre-gl-js/maplibre-gl-es.js";
+import { sleep } from "https://js.sabae.cc/sleep.js";
+
+const fetchViaProxy = (url) => {
+    const host = "fukuno.jig.jp";
+	const url_proxy = "https://" + host + "/proxy/ITqT5WkhCf2yn1s9?url=" + encodeURI(url);
+    return fetch(url_proxy);
+};
+
+const getGTFS = async () => {
+    //const url = "http://www3.unobus.co.jp/GTFS/GTFS_RT-VP.bin"; // CORS
+    const url = "https://files-skybrain.ekispert.jp/toyama/gtfs-rt/latest/nanto-city/VehiclePositions.pb"; // CORS
+    const data = new Uint8Array(await (await fetchViaProxy(url)).arrayBuffer());
+    const feed = GtfsRealtimeApi.transit_realtime.FeedMessage.decode(data);
+    return feed;
+};
+
+window.onload = async () => {
+    const divmap = document.createElement("div");
+    divmap.id = "map";
+    document.body.appendChild(divmap);
+
+    // https://maplibre.org/maplibre-gl-js-docs/api/
+    const mapgl = maplibregl;
+    const map = new mapgl.Map({
+        container: 'map',
+        hash: true,
+        style: 'https://taisukef.github.io/gsivectortile-3d-like-building/building3d.json',
+        //center: [pos.longitude, pos.latitude],
+        zoom: 15,
+        minZoom: 4,
+        maxZoom: 17.99,
+        bearing: -40,
+        pitch: 60,
+        //doubleClickZoom: false,
+        //localIdeographFontFamily: false
+    });
+
+    let first = true;
+    for (;;) {
+        const feed = await getGTFS();
+        const lls = new mapgl.LngLatBounds();
+        for (const e of feed.entity) {
+            const pos = e.vehicle.position;
+            const ll = [pos.longitude, pos.latitude];
+            const marker = new mapgl.Marker().setLngLat(ll).addTo(map);
+            lls.extend(ll);
+
+            const popup = new mapgl.Popup({ className: "popup" })
+                .setLngLat(ll)
+                .setHTML(JSON.stringify(e.vehicle))
+                .setMaxWidth("300px");
+            marker.setPopup(popup);
+        }
+        if (first) {
+            first = false;
+            map.fitBounds(lls);
+        }
+        await sleep(15 * 1000);
+    }
+};
+
+</script>
+</head>
+</html>

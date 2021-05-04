@@ -1,0 +1,44 @@
+<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width">
+<title>GTFS Realtime list in Japan</title>
+<script type="module">
+import { CSV } from "https://js.sabae.cc/CSV.js";
+window.onload = async () => {
+    //const data = await CSV.fetch("https://tshimada291.sakura.ne.jp/transport/dat/GTFS_opendata_jp_catalog.csv"); // CORS disabled
+    //const data = CSV.toJSON(await CSV.fetch("./GTFS_opendata_jp_catalog.csv"))
+    const data = CSV.toJSON(await CSV.fetch("./GTFS_opendata_jp_catalog_rt_link.csv"))
+    const rt = data.filter(d => d.rt_catalog_url && d.rt_vehicle_position?.startsWith("https://")); // 5件
+    console.log(rt);
+    for (const art of rt) {
+        try {
+            const url = art.rt_vehicle_position;
+            console.log(url);
+            const data = await (await fetch(url)).arrayBuffer();
+            console.log(data.length);
+        } catch (e) {
+            // 全滅、CORS disabled
+            console.log(e);
+        }
+    }
+};
+</script>
+
+<style>
+table {
+    border-collapse: collapse;
+    overflow-x: scroll;
+}
+td, th {
+    border: 1px solid black;
+    padding: .3em;
+    font-size: 80%;
+    word-break: break-all;
+    min-width: 8em;
+}
+</style>
+</head><body>
+<h1>GTFS Realtime list in Japan</h1>
+<script type="module" src="https://code4sabae.github.io/js/csv-viewer.js"></script>
+<csv-viewer src="./GTFS_opendata_jp_catalog_rt_link.csv"></csv-viewer>
+</body>
+</html>
+
