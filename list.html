@@ -2,7 +2,7 @@
 <title>GTFS Realtime list in Japan</title>
 <script type="module">
 import { CSV } from "https://js.sabae.cc/CSV.js";
-window.onload = async () => {
+onload = async () => {
     //const data = await CSV.fetch("https://tshimada291.sakura.ne.jp/transport/dat/GTFS_opendata_jp_catalog.csv"); // CORS disabled
     //const data = CSV.toJSON(await CSV.fetch("./GTFS_opendata_jp_catalog.csv"))
     const data = CSV.toJSON(await CSV.fetch("./GTFS_opendata_jp_catalog_rt_link.csv"))

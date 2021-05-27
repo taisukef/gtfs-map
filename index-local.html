@@ -25,10 +25,13 @@ h1 {
 import { GTFS } from "./GTFS.js";
 import { maplibregl } from "https://taisukef.github.io/maplibre-gl-js/maplibre-gl-es.js";
 import { sleep } from "https://js.sabae.cc/sleep.js";
+import { Geo3x3 } from "https://taisukef.github.io/Geo3x3/Geo3x3.mjs";
 
 onload = async () => {
-    const url_gtfs = "./wakayama.zip";
-    const url_gtfsrt = null;
+    //const url_gtfs = "http://www3.unobus.co.jp/opendata/GTFS-JP.zip";
+    //const url_gtfsrt = "http://www3.unobus.co.jp/GTFS/GTFS_RT-VP.bin";
+    const url_gtfs = "https://www.nagai-unyu.net/rosen/GTFS/aux/GTFS-JP_nbaux-gunma-jp.zip";
+    const url_gtfsrt = "https://realtime.gtfs.info/nagai-unyu/trip_update";
     const update_interval_sec = 15;
     
     // 地図表示 (MapLibre API: https://maplibre.org/maplibre-gl-js-docs/api/ )
@@ -56,18 +59,17 @@ onload = async () => {
         const marker = new mapgl.Marker({ color: "#ff9999" }).setLngLat(ll).addTo(map);
         lls.extend(ll);
 
+        const geo3x3 = Geo3x3.encode(e.stop_lat, e.stop_lon, 20);
+
         const popup = new mapgl.Popup({ className: "popup" })
             .setLngLat(ll)
-            .setHTML(`<a href=${e.stop_url}>${e.stop_name}</a>`)
+            .setHTML(`<a href=${e.stop_url}>${e.stop_name}</a><br><a href=https://geo3x3.com/#${geo3x3}>${geo3x3}</a>`)
             .setMaxWidth("300px");
         marker.setPopup(popup);
     }
     map.fitBounds(lls);
 
     // update_interval_sec秒おきにGTFSrealtimeでバス情報の取得と表示
-    if (!url_gtfsrt) {
-        return;
-    }
     for (;;) {
         const feed = await GTFS.fetchRT(url_gtfsrt);
         for (const e of feed.entity) {
